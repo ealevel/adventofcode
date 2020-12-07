@@ -13,25 +13,25 @@ for line in sys.stdin:
         m = re.match('(\d+) ([\w ]+) bags?', bag)
         num = int(m.group(1))
         inner = m.group(2)
-        s = up_g.get(inner, set())
-        s.add(outer)
-        up_g[inner] = s
+        outer_bags = up_g.get(inner, set())
+        outer_bags.add(outer)
+        up_g[inner] = outer_bags
         down_g[outer].append((num, inner))
 
-def count_up(inner, checked):
-    if inner in checked:
+def count_up(bag, checked):
+    if bag in checked:
         return 0
-    checked.add(inner)
+    checked.add(bag)
     num = 1
-    for outer in up_g.get(inner, set()):
+    for outer in up_g.get(bag, set()):
         num += count_up(outer, checked)
     return num
 
-def count_down(outer, checked):
-    if outer in checked:
-        return checked[outer]
+def count_down(bag, checked):
+    if bag in checked:
+        return checked[bag]
     count = 1
-    for num, inner in down_g.get(outer, {}):
+    for num, inner in down_g.get(bag, {}):
         checked[inner] = count_down(inner, checked)
         count += num * checked[inner]
     return count
