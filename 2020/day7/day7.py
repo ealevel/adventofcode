@@ -1,30 +1,30 @@
 import re
 import sys
 
-up_g = {} # {bag: [bags that can contain it]}
+up_g = {} # {bag: [outer bag]}
 down_g = {} # {bag: [(count, inner bag)]}
 for line in sys.stdin:
     f = re.split(' bags contain |, ', line.strip().rstrip('.'))
     outer = f[0]
     down_g[outer] = []
-    for inner in f[1:]:
-        if inner == 'no other bags':
+    for bag in f[1:]:
+        if bag == 'no other bags':
             continue
-        m = re.match('(\d+) ([\w ]+) bags?', inner)
+        m = re.match('(\d+) ([\w ]+) bags?', bag)
         num = int(m.group(1))
-        bag = m.group(2)
-        s = up_g.get(bag, set())
+        inner = m.group(2)
+        s = up_g.get(inner, set())
         s.add(outer)
-        up_g[bag] = s
-        down_g[outer].append((num, bag))
+        up_g[inner] = s
+        down_g[outer].append((num, inner))
 
-def count_up(outer, checked):
-    if outer in checked:
+def count_up(inner, checked):
+    if inner in checked:
         return 0
-    checked.add(outer)
+    checked.add(inner)
     num = 1
-    for inner in up_g.get(outer, set()):
-        num += count_up(inner, checked)
+    for outer in up_g.get(inner, set()):
+        num += count_up(outer, checked)
     return num
 
 def count_down(outer, checked):
