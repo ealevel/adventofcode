@@ -20,9 +20,9 @@ def run(acc, count, seen):
 def fix(acc, count, changed, seen):
     if count == len(ops):
         return acc
-    if count in seen:
+    if (count, changed) in seen:
         return None
-    seen.add(count)
+    seen.add((count, changed))
     op = ops[count]
     if op[0] == 'acc':
         return fix(acc + op[1], count + 1, changed, seen)
