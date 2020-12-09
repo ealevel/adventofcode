@@ -17,16 +17,15 @@ def valid(arr, n):
     return False
 
 def encryption_weakness(arr, n):
-    sums = [arr[0]]
-    for i in range(1, len(arr)):
-        sums.append(sums[-1] + arr[i])
-    lo = 0
-    hi = 1
+    lo = -1
+    hi = -1
+    s = 0
     while True:
-        s = sums[hi] - sums[lo - 1] if lo > 0 else sums[hi]
         if s > n:
+            s -= arr[lo] if lo >= 0 else 0
             lo += 1
         elif s < n:
+            s += arr[hi] if hi >= 0 else 0
             hi += 1
         else:
             return min(arr[lo:hi+1]) + max(arr[lo:hi+1])
