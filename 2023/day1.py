@@ -18,4 +18,8 @@ def extract_digits(input_string):
   last_digit = map[matches[-1]] if matches[-1] in map else int(matches[-1])
   return 10 * first_digit + last_digit
 
-print(sum(extract_digits(line.strip()) for line in sys.stdin))
+s = 0
+for line in sys.stdin:
+  s += extract_digits(line.strip())
+print(s)
+
