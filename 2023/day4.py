@@ -11,6 +11,7 @@ for id, __line in enumerate(sys.stdin):
   if count > 0:
     points += 2 ** (count-1)
   for i in range(count):
+    # get extra an copy for each card #id to the next cards
     copies[id+i+1] = copies.get(id+i+1, 0) + copies[id]
 print(points)
 print(sum(copies.values()))
