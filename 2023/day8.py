@@ -1,4 +1,5 @@
 import sys
+import math
 
 inst = sys.stdin.readline().strip()
 n = len(inst)
@@ -10,28 +11,20 @@ for line in sys.stdin.readlines():
   left, right = next[1:-1].split(', ')[0:2]
   mp[pos] = (left, right)
 
-c = 0
-pos = 'AAA'
-while pos != 'ZZZ':
-  if inst[c % n] == 'L':
-    pos = mp[pos][0]
-  else:
-    pos = mp[pos][1]
-  c += 1
-print(c)
+def solve(pos, is_end):
+  c = 0
+  while not is_end(pos):
+    if inst[c % n] == 'L':
+      pos = mp[pos][0]
+    else:
+      pos = mp[pos][1]
+    c += 1
+  return c
 
-# c = 0
-# init = [p for p in mp if p[-1] == 'A']
-# pos = [p for p in mp if p[-1] == 'A']
-# while not all(p[-1] == 'Z' for p in pos):
-#   # if any(p[-1] == 'Z' for p in pos):
-#   # if init == pos:
-#   # if pos[0] == 'AAA':
-#   if sum(p[-1] == 'Z' for p in pos) >= 4:
-#     print(c, pos)
-#   if inst[c % n] == 'L':
-#     pos = [mp[p][0] for p in pos]
-#   else:
-#     pos = [mp[p][1] for p in pos]
-#   c += 1
-# print(c)
+print(solve('AAA', lambda pos: pos == 'ZZZ'))
+
+# Get LCM of all steps from **A to **Z since there are loops and:
+# - given the chain: [**A -> startLoop] -> [... -> **Z] -> [**Z -> startLoop] exists
+# - len(**A -> startLoop) == len(**Z -> startLoop)
+steps = [solve(pos, lambda pos: pos[-1] == 'Z') for pos in mp if pos[-1] == 'A']
+print(steps, math.lcm(*steps))
