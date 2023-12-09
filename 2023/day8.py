@@ -25,6 +25,7 @@ print(solve('AAA', lambda pos: pos == 'ZZZ'))
 
 # Get LCM of all steps from **A to **Z since there are loops and:
 # - given the chain: [**A -> startLoop] -> [... -> **Z] -> [**Z -> startLoop] exists
+# - there's exactly one **Z for each **A start
 # - len(**A -> startLoop) == len(**Z -> startLoop)
 steps = [solve(pos, lambda pos: pos[-1] == 'Z') for pos in mp if pos[-1] == 'A']
 print(steps, math.lcm(*steps))
