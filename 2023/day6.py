@@ -1,6 +1,7 @@
 import sys
 import math
 
+
 # Solve s in: s*t - s^2 > d => s^2 - t*s + d < 0
 # Return numbers between floor(highest) - ceil(lowest) + 1
 # That is, solutions that will produce longer distance than d.
