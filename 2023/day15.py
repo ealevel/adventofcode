@@ -19,4 +19,5 @@ for word in input:
     bid = hash(label)
     boxes[bid][label] = int(focal_len)
 
+# this works since dict iterator returns elements in insertion order
 print(sum((bid+1)*(lid+1)*box[label] for bid, box in enumerate(boxes) for lid, label in enumerate(box.keys())))
