@@ -4,30 +4,19 @@ from functools import reduce
 def hash(word):
   return reduce(lambda s, ch: ((s + ord(ch)) * 17) & 0xff, (ch for ch in word), 0)
 
-def index(box, label):
-  for idx, lens in enumerate(box):
-    if lens[0] == label:
-      return idx
-  return -1
-
 input = sys.stdin.readline().strip().split(',')
 print(sum(hash(w) for w in input))
 
-boxes = [[] for _ in range(256)]
+boxes = [{} for _ in range(256)]
 for word in input:
   if word[-1] == '-':
     label = word[:-1]
     bid = hash(label)
-    idx = index(boxes[bid], label)
-    if idx >= 0:
-      del boxes[bid][idx]
+    if label in boxes[bid]:
+      del boxes[bid][label]
   else:
     label, focal_len = word.split('=')[:]
     bid = hash(label)
-    idx = index(boxes[bid], label)
-    if idx >= 0:
-      boxes[bid][idx] = (label, int(focal_len))
-    else:
-      boxes[bid].append((label, int(focal_len)))
+    boxes[bid][label] = int(focal_len)
 
-print(sum((bid+1)*(lid+1)*lens[1] for bid, box in enumerate(boxes) for lid, lens in enumerate(box)))
+print(sum((bid+1)*(lid+1)*box[label] for bid, box in enumerate(boxes) for lid, label in enumerate(box.keys())))
