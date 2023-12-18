@@ -1,73 +1,74 @@
 import sys
 from enum import Enum
+from collections import namedtuple
 
-sys.setrecursionlimit(10_000_000)
+sys.setrecursionlimit(10_000)
 
-class Dir(Enum):
-  UPWARD = 0
-  DOWNWARD = 1
-  LEFTWARD = 2
-  RIGHTWARD = 3
+UPWARD = 0
+DOWNWARD = 1
+LEFTWARD = 2
+RIGHTWARD = 3
 
-# {dir: (xdelta, ydelta, cell: [next dirs])}
+Dir = namedtuple('Dir', ['dr', 'dc', 'nextdir'])
 next = {
-  Dir.LEFTWARD: (-1, 0, {
-    '|': [Dir.DOWNWARD, Dir.UPWARD],
-    '/': [Dir.DOWNWARD],
-    '\\': [Dir.UPWARD],
+  LEFTWARD: Dir(0, -1, {
+    '|': [DOWNWARD, UPWARD],
+    '/': [DOWNWARD],
+    '\\': [UPWARD],
   }),
-  Dir.RIGHTWARD: (1, 0, {
-    '|': [Dir.DOWNWARD, Dir.UPWARD],
-    '/': [Dir.UPWARD],
-    '\\': [Dir.DOWNWARD],
+  RIGHTWARD: Dir(0, 1, {
+    '|': [DOWNWARD, UPWARD],
+    '/': [UPWARD],
+    '\\': [DOWNWARD],
   }),
-  Dir.DOWNWARD: (0, 1, {
-    '-': [Dir.LEFTWARD, Dir.RIGHTWARD],
-    '/': [Dir.LEFTWARD],
-    '\\': [Dir.RIGHTWARD],
+  DOWNWARD: Dir(1, 0, {
+    '-': [LEFTWARD, RIGHTWARD],
+    '/': [LEFTWARD],
+    '\\': [RIGHTWARD],
   }),
-  Dir.UPWARD: (0, -1, {
-    '-': [Dir.LEFTWARD, Dir.RIGHTWARD],
-    '/': [Dir.RIGHTWARD],
-    '\\': [Dir.LEFTWARD],
+  UPWARD: Dir(-1, 0, {
+    '-': [LEFTWARD, RIGHTWARD],
+    '/': [RIGHTWARD],
+    '\\': [LEFTWARD],
   }),
 }
 
-def solve(m, x, y, dir):
-  def run(m, x, y, dir, seen):
-    if dir in seen.get((x,y), {}) or x < 0 or x >= len(m) or y < 0 or y >= len(m):
-      return # already explored
-    seen.setdefault((x, y), set())
-    seen[(x, y)].add(dir)
-    if m[y][x] not in next[dir][2]:
+def solve(m, r, c, dir):
+  def run(r, c, dir):
+    if dir in seen.get((r,c), {}) or not (0 <= r < len(m)) or not (0 <= c < len(m[0])):
+      return # already explored or out of matrix
+    seen.setdefault((r, c), set())
+    seen[(r, c)].add(dir)
+    if m[r][c] not in next[dir].nextdir:
       # same direction
-      x1 = x + next[dir][0]
-      y1 = y + next[dir][1]
-      run(m, x1, y1, dir, seen)
+      r1 = r + next[dir].dr
+      c1 = c + next[dir].dc
+      run(r1, c1, dir)
     else:
-      for ndir in next[dir][2][m[y][x]]:
-        x1 = x + next[ndir][0]
-        y1 = y + next[ndir][1]
-        run(m, x1, y1, ndir, seen)
+      for ndir in next[dir].nextdir[m[r][c]]:
+        r1 = r + next[ndir].dr
+        c1 = c + next[ndir].dc
+        run(r1, c1, ndir)
   # debug(m, energized)
   seen = {} # {(x,y): set(dirs)}
-  run(m, x, y, dir, seen)
+  run(r, c, dir)
   return len(seen)
 
 def debug(m, seen):
-  for (x,y) in seen:
-    m[y][x] = '#'
+  for (r,c) in seen:
+    m[r][c] = '#'
   for row in m:
     print(''.join(row))
 
 m = []
 for row in sys.stdin:
-  m.append([c for c in row.strip()])
+  m.append(list(row.strip()))
 
-print(solve(m, 0, 0, Dir.RIGHTWARD))
+print(solve(m, 0, 0, RIGHTWARD))
 
 print(max(
-  max(solve(m, x, 0, Dir.DOWNWARD) for x in range(len(m[0]))),
-  max(solve(m, x, len(m[0])-1, Dir.UPWARD) for x in range(len(m[0]))),
-  max(solve(m, 0, y, Dir.RIGHTWARD) for y in range(len(m))),
-  max(solve(m, len(m)-1, y, Dir.LEFTWARD) for y in range(len(m)))))
+  max(solve(m, r, 0, RIGHTWARD) for r in range(len(m))),
+  max(solve(m, r, len(m[0])-1, LEFTWARD) for r in range(len(m))),
+  max(solve(m, 0, c, DOWNWARD) for c in range(len(m[0]))),
+  max(solve(m, len(m)-1, c, UPWARD) for c in range(len(m[0]))),
+))
