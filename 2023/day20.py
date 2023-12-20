@@ -3,28 +3,37 @@ import sys
 LOW = 0
 HIGH = 1
 
-def simul(iter):
-  # init states
+def init_ff():
   ff = {} # {mod: on|off}
-  con = {} # {mod: {prev: low|high}}
   for mod in modules.keys():
     if types[mod] == '%':
       ff[mod] = False
-    if types[mod] == '&':
-      con[mod] = {}
+  return ff
+
+def init_con():
+  con = {} # {mod: {prev: low|high}}
   for mod in modules.keys():
     for dest in modules[mod]:
-      if dest in con:
+      if types.get(dest, None) == '&':
+        con.setdefault(dest, {})
         con[dest][mod] = LOW
-  # simulate
+  return con
+
+def simul(iter):
+  ff = init_ff()
+  con = init_con()
   rcvd = [0, 0]
-  for _ in range(iter):
+  for t in range(iter):
     q = [('broadcaster', LOW, None)]
     while len(q) > 0:
       mod, pulse, prev = q.pop(0)
       rcvd[pulse] += 1
+      if mod == 'ls' and pulse == HIGH:
+        # Log who sent a high pulse to ls. ls will send a low pulse to rx when all
+        # these simultaneously send a high pulse to it. Then LCM of these iterations.
+        print('module {} sent high pulse to rx at iter={}'.format(prev, t))
       if mod not in modules:
-        continue # drop it
+        continue # sink output, drop it
       if types[mod] == '%':
         if pulse == LOW:
           if ff[mod]:
@@ -56,3 +65,4 @@ for line in sys.stdin:
   modules[mod] = dest
 
 print(simul(1000))
+simul(10000)
