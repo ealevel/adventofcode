@@ -14,7 +14,9 @@ def bfs(n, s, steps, inf_boundaries):
       if is_valid(n, r+d[0], c+d[1], seen, inf_boundaries):
         q.append((r+d[0], c+d[1], left-1))
         seen.add((r+d[0], c+d[1]))
-  return sum(1 for (r, c) in seen if (r+c)%2 == steps%2)
+  pos = [(r,c) for (r, c) in seen if (r+c)%2 == steps%2]
+  # debug(pos)
+  return len(pos)
 
 def is_valid(n, r, c, seen, inf_boundaries):
   if inf_boundaries:
