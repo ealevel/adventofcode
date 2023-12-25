@@ -1,12 +1,12 @@
 import sys
 import re
+import z3
 from collections import namedtuple
 from fractions import Fraction
-import z3
 
 Point = namedtuple('Point', ['x', 'y', 'z'])
 
-def intersect(p0, p1, q0, q1):
+def intersect_lines(p0, p1, q0, q1):
   mp = Fraction(p1.y - p0.y, p1.x - p0.x)
   mq = Fraction(q1.y - q0.y, q1.x - q0.x)
   bp = p0.y - mp * p0.x
@@ -25,9 +25,9 @@ def intersect(p0, p1, q0, q1):
 def intersect_rays(p, dirp, q, dirq):
   p1 = Point(p.x+dirp.x, p.y+dirp.y, p.z+dirp.z)
   q1 = Point(q.x+dirq.x, q.y+dirq.y, q.z+dirq.z)
-  mid = intersect(p, p1, q, q1)
+  mid = intersect_lines(p, p1, q, q1)
   if mid:
-    # verify intersection point falls in trajectory
+    # verify that intersection point falls in the hail trajectory
     valid_p = (mid.x >= p.x) == (dirp.x >= 0) and (mid.y >= p.y) == (dirp.y >= 0)
     valid_q = (mid.x >= q.x) == (dirq.x >= 0) and (mid.y >= q.y) == (dirq.y >= 0)
     if valid_p and valid_q:
@@ -38,12 +38,11 @@ def collision():
   x, y, z = z3.Real('x'), z3.Real('y'), z3.Real('z')
   vx, vy, vz = z3.Real('vx'), z3.Real('vy'), z3.Real('vz')
   s = z3.Solver()
-  for i, line in enumerate(lines):
-    (lx, ly, lz), (vlx, vly, vlz) = line
-    t = z3.Real(f't_{i}')
-    s.add(x + vx * t == lx + vlx * t)
-    s.add(y + vy * t == ly + vly * t)
-    s.add(z + vz * t == lz + vlz * t)
+  for i, (p, pv) in enumerate(lines):
+    t_i = z3.Real(f't_{i}')
+    s.add(x + vx * t_i == p.x + pv.x * t_i)
+    s.add(y + vy * t_i == p.y + pv.y * t_i)
+    s.add(z + vz * t_i == p.z + pv.z * t_i)
   assert s.check() == z3.sat # satisfies
   m = s.model()
   return Point(m[x].as_long(), m[y].as_long(), m[z].as_long())
