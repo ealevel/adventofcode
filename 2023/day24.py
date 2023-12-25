@@ -2,6 +2,7 @@ import sys
 import re
 from collections import namedtuple
 from fractions import Fraction
+import z3
 
 Point = namedtuple('Point', ['x', 'y', 'z'])
 
@@ -33,6 +34,20 @@ def intersect_rays(p, dirp, q, dirq):
       return mid
   return None
 
+def collision():
+  x, y, z = z3.Real('x'), z3.Real('y'), z3.Real('z')
+  vx, vy, vz = z3.Real('vx'), z3.Real('vy'), z3.Real('vz')
+  s = z3.Solver()
+  for i, line in enumerate(lines):
+    (lx, ly, lz), (vlx, vly, vlz) = line
+    t = z3.Real(f't_{i}')
+    s.add(x + vx * t == lx + vlx * t)
+    s.add(y + vy * t == ly + vly * t)
+    s.add(z + vz * t == lz + vlz * t)
+  assert s.check() == z3.sat # satisfies
+  m = s.model()
+  return Point(m[x].as_long(), m[y].as_long(), m[z].as_long())
+
 minval = 200_000_000_000_000
 maxval = 400_000_000_000_000
 
@@ -49,3 +64,6 @@ for i in range(len(lines)):
     if mid and minval <= mid.x <= maxval and minval <= mid.y <= maxval:
       cnt += 1
 print(cnt)
+
+p = collision()
+print(p.x + p.y + p.z)
